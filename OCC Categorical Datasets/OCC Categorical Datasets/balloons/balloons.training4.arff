@@ -1,0 +1,19 @@
+@relation balloons.training4
+
+@attribute color {yellow,purple}
+@attribute size {large,small}
+@attribute act {stretch,dip}
+@attribute age {adult,child}
+@attribute class {genuine,impostor}
+
+@data
+yellow,small,stretch,child,genuine
+yellow,small,dip,adult,genuine
+yellow,small,dip,child,genuine
+yellow,large,stretch,child,genuine
+yellow,large,dip,adult,genuine
+yellow,large,dip,child,genuine
+purple,small,stretch,child,genuine
+purple,small,dip,adult,genuine
+purple,large,dip,adult,genuine
+purple,large,dip,child,genuine

@@ -1,0 +1,105 @@
+@relation solar-flare1.testing2
+
+@attribute largest_spot_size {A,H,K,R,S,X}
+@attribute spot_distribution {C,I,O,X}
+@attribute Activity {1,2}
+@attribute Evolution {1,2,3}
+@attribute Previous_24_hour_flare_activity_code {1,3}
+@attribute Historically-complex {1,2}
+@attribute Did_region_become_historically_complex {1,2}
+@attribute Area {1,2}
+@attribute Area_of_the_largest_spot {1,2}
+@attribute C-class_flares_production_by_this_region {0,1,2}
+@attribute M-class_flares_production_by_this_region {0,1,2,4}
+@attribute X-class_flares_production_by_this_region {0,1}
+@attribute class {genuine,impostor}
+
+@data
+K,I,2,3,1,2,2,1,2,0,0,0,impostor
+A,C,1,3,1,2,2,1,2,0,0,0,impostor
+S,I,1,3,1,1,2,1,2,0,2,0,impostor
+A,O,1,2,1,1,2,1,2,0,0,0,impostor
+K,O,1,3,1,1,2,1,2,1,0,0,impostor
+K,I,2,2,3,2,2,1,2,0,1,0,impostor
+K,I,1,3,1,1,2,1,2,0,0,0,impostor
+K,I,2,3,1,2,2,1,2,0,0,0,impostor
+K,C,1,3,1,2,2,1,2,0,1,0,impostor
+A,I,1,3,1,1,2,1,2,0,0,0,impostor
+A,I,2,2,3,2,2,1,2,0,0,0,impostor
+K,I,1,2,1,2,2,1,2,1,0,0,impostor
+A,I,1,3,1,2,2,1,2,0,0,0,impostor
+A,I,2,2,3,2,2,1,2,0,1,0,impostor
+K,I,1,3,1,1,2,1,2,0,0,0,impostor
+A,I,2,2,1,2,2,1,2,2,0,0,impostor
+S,I,1,3,1,1,2,1,2,0,0,0,impostor
+S,O,2,2,3,2,2,1,2,0,1,0,impostor
+A,O,2,3,1,2,2,1,2,0,0,0,impostor
+A,O,1,3,1,1,2,1,2,0,0,0,impostor
+K,C,1,3,1,1,2,2,2,0,2,0,impostor
+K,I,1,3,1,2,2,1,2,0,0,0,impostor
+K,I,1,2,1,2,2,1,2,1,1,0,impostor
+A,I,2,3,1,2,2,1,2,0,0,0,impostor
+A,I,1,3,1,2,2,1,2,0,1,0,impostor
+A,I,2,3,3,2,2,1,2,0,1,0,impostor
+K,I,1,3,3,2,2,2,2,0,0,0,impostor
+S,O,1,2,1,2,2,1,2,0,0,0,impostor
+S,O,1,2,1,2,2,1,2,0,0,0,impostor
+X,O,1,3,1,1,2,1,1,0,0,0,genuine
+X,O,1,2,1,1,2,1,1,0,0,0,genuine
+X,O,1,3,1,1,2,1,1,0,0,0,genuine
+X,O,1,3,1,1,2,1,1,0,0,0,genuine
+X,O,1,3,1,1,2,1,1,0,0,0,genuine
+X,O,1,3,1,1,2,1,1,0,0,0,genuine
+S,O,1,2,1,1,2,1,2,0,0,0,genuine
+S,O,1,3,1,1,2,1,1,0,0,0,genuine
+R,O,1,3,1,1,2,1,1,0,0,0,genuine
+H,I,1,3,1,1,2,1,2,0,0,0,genuine
+A,I,1,2,1,1,2,1,2,0,0,0,genuine
+S,O,1,2,1,1,2,1,1,0,0,0,genuine
+R,I,1,3,1,1,2,1,2,0,0,0,genuine
+A,I,1,3,1,1,2,1,1,0,0,0,genuine
+S,O,1,2,1,2,2,1,2,0,0,0,genuine
+R,O,1,3,1,1,2,1,1,0,0,0,genuine
+A,O,1,2,1,2,2,1,2,0,0,0,genuine
+S,O,1,1,1,2,2,1,2,0,0,0,genuine
+S,O,2,2,1,2,2,1,1,0,0,0,genuine
+S,O,1,2,1,2,2,1,2,0,0,0,genuine
+S,O,1,2,1,2,2,1,2,0,0,0,genuine
+S,O,2,3,1,2,2,1,2,0,0,0,genuine
+S,O,1,2,1,1,2,1,2,1,0,0,genuine
+K,O,1,2,3,2,2,1,2,0,0,0,genuine
+S,O,1,1,3,2,2,1,2,0,0,0,genuine
+S,O,1,1,1,2,2,1,2,0,0,0,genuine
+K,I,1,3,1,2,2,1,2,0,0,0,genuine
+S,I,1,2,1,2,2,1,2,0,0,0,genuine
+S,I,2,3,3,1,2,1,1,0,1,0,genuine
+S,O,1,1,1,1,2,1,2,0,1,0,genuine
+R,O,1,1,1,1,2,1,2,0,0,0,genuine
+R,O,1,3,1,1,2,1,2,0,0,0,genuine
+K,I,1,3,1,2,2,1,2,0,0,0,genuine
+R,I,2,3,3,1,2,1,2,0,0,0,genuine
+K,O,1,2,1,2,2,1,2,0,0,0,genuine
+R,O,1,3,1,1,2,1,1,0,0,0,genuine
+A,O,1,3,1,2,2,1,2,0,0,0,genuine
+K,I,1,2,1,2,2,1,2,0,0,0,genuine
+K,I,1,3,1,2,2,1,2,2,4,0,genuine
+S,O,1,3,1,1,2,1,2,0,1,0,genuine
+A,I,1,3,1,1,2,1,2,0,0,0,genuine
+S,O,1,2,3,2,2,1,2,0,0,0,genuine
+S,O,1,3,1,1,2,1,2,0,0,0,genuine
+S,O,1,3,1,1,2,1,2,0,0,0,genuine
+S,O,2,2,1,2,2,1,2,0,1,0,genuine
+S,O,1,2,1,1,2,1,2,0,0,0,genuine
+A,I,1,3,1,1,2,1,2,0,0,0,genuine
+S,O,1,1,1,2,2,1,2,0,0,0,genuine
+S,O,1,2,1,1,2,1,2,0,0,0,genuine
+S,O,1,2,1,1,2,1,2,0,0,0,genuine
+S,I,2,2,1,1,2,1,2,0,0,0,genuine
+A,O,1,3,1,1,2,1,2,0,0,0,genuine
+S,O,1,3,1,1,2,1,2,0,0,0,genuine
+R,I,1,3,1,1,2,1,2,0,0,0,genuine
+R,I,1,2,1,1,2,1,2,0,0,0,genuine
+R,O,2,1,1,1,2,1,2,0,0,0,genuine
+S,O,1,3,1,1,2,1,2,1,1,0,genuine
+H,I,2,3,1,1,2,1,2,0,0,0,genuine
+K,I,1,3,1,1,2,1,1,0,0,0,genuine

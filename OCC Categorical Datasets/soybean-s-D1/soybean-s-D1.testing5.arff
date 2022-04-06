@@ -1,0 +1,56 @@
+@relation soybean-s-D1.testing5
+
+@attribute date {0,1,2,3,4,5,6}
+@attribute plant-stand {0,1}
+@attribute precip {0,1,2}
+@attribute temp {0,1,2}
+@attribute hail {0,1}
+@attribute crop-hist {0,1,2,3}
+@attribute area-damaged {0,1,2,3}
+@attribute severity {0,1,2}
+@attribute seed-tmt {0,1,2}
+@attribute germination {0,1,2}
+@attribute plant-growth {0,1}
+@attribute leaves {0,1}
+@attribute leafspots-halo {0,1,2}
+@attribute leafspots-marg {0,1,2}
+@attribute leafspot-size {0,1,2}
+@attribute leaf-shread {0,1}
+@attribute leaf-malf {0,1}
+@attribute leaf-mild {0,1,2}
+@attribute stem {0,1}
+@attribute lodging {0,1}
+@attribute stem-cankers {0,1,2,3}
+@attribute canker-lesion {0,1,2,3}
+@attribute fruiting-bodies {0,1}
+@attribute external-decay {0,1,2}
+@attribute mycelium {0,1}
+@attribute int-discolor {0,1,2}
+@attribute sclerotia {0,1}
+@attribute fruit-pods {0,1,2,3}
+@attribute fruit-spots {0,1,2,3,4}
+@attribute seed {0,1}
+@attribute mold-growth {0,1}
+@attribute seed-discolor {0,1}
+@attribute seed-size {0,1}
+@attribute shriveling {0,1}
+@attribute roots {0,1,2}
+@attribute class {genuine,impostor}
+
+@data
+4,0,2,1,1,1,0,1,0,2,1,1,0,2,2,0,0,0,1,0,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+5,0,2,1,0,3,1,1,1,2,1,1,0,2,2,0,0,0,1,1,3,0,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+3,0,2,1,0,2,0,2,1,1,1,1,0,2,2,0,0,0,1,0,3,0,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+6,0,2,1,0,1,1,1,0,0,1,1,0,2,2,0,0,0,1,1,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+4,0,2,1,0,3,0,2,0,2,1,1,0,2,2,0,0,0,1,0,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+5,0,2,1,0,2,0,1,1,0,1,1,0,2,2,0,0,0,1,1,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+3,0,2,1,0,2,1,1,0,1,1,1,0,2,2,0,0,0,1,1,3,0,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+3,0,2,1,0,1,0,2,1,2,1,1,0,2,2,0,0,0,1,0,3,0,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+6,0,2,1,0,3,0,1,1,1,1,1,0,2,2,0,0,0,1,0,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+6,0,2,1,0,1,0,1,0,2,1,1,0,2,2,0,0,0,1,0,3,1,1,1,0,0,0,0,4,0,0,0,0,0,0,impostor
+1,1,2,1,1,3,1,2,0,1,1,1,0,2,2,0,0,0,1,1,1,2,0,1,0,0,0,3,4,0,0,0,0,0,1,genuine
+1,1,2,0,0,0,1,2,1,0,1,1,0,2,2,0,0,0,1,0,2,2,0,0,0,0,0,3,4,0,0,0,0,0,1,genuine
+1,1,2,1,1,2,3,1,1,1,1,1,0,2,2,0,0,0,1,0,2,2,0,1,0,0,0,3,4,0,0,0,0,0,1,genuine
+2,1,1,0,0,3,1,2,0,2,1,1,0,2,2,0,0,0,1,0,1,2,0,0,0,0,0,3,4,0,0,0,0,0,1,genuine
+0,1,1,1,1,2,1,2,1,0,1,1,0,2,2,0,0,0,1,1,2,2,0,1,0,0,0,3,4,0,0,0,0,0,1,genuine
+0,1,2,1,0,3,1,1,0,2,1,1,0,2,2,0,0,0,1,0,1,2,0,0,0,0,0,3,4,0,0,0,0,0,1,genuine

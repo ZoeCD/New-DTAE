@@ -1,0 +1,21 @@
+@relation lenses.training5
+
+@attribute age {1,2,3}
+@attribute spectacle {1,2}
+@attribute astigmatic {1,2}
+@attribute tear {1,2}
+@attribute class {genuine,impostor}
+
+@data
+1,1,1,1,genuine
+1,1,2,1,genuine
+1,2,1,1,genuine
+1,2,2,1,genuine
+2,1,1,1,genuine
+2,1,2,1,genuine
+2,2,1,1,genuine
+2,2,2,1,genuine
+2,2,2,2,genuine
+3,1,1,1,genuine
+3,1,1,2,genuine
+3,1,2,1,genuine

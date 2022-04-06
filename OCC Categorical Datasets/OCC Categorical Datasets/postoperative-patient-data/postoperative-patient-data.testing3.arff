@@ -1,0 +1,52 @@
+@relation postoperative-patient-data.testing3
+
+@attribute L-CORE {high,low,mid}
+@attribute L-SURF {high,low,mid}
+@attribute L-O2 {excellent,good}
+@attribute L-BP {high,low,mid}
+@attribute SURF-STBL {stable,unstable}
+@attribute CORE-STBL {mod-stable,stable,unstable}
+@attribute BP-STBL {mod-stable,stable,unstable}
+@attribute COMFORT {05,07,10,15}
+@attribute class {genuine,impostor}
+
+@data
+low,mid,good,high,unstable,stable,stable,?,impostor
+mid,low,good,mid,stable,stable,unstable,10,impostor
+mid,high,excellent,high,stable,stable,stable,10,impostor
+high,low,good,mid,stable,stable,unstable,15,impostor
+mid,low,excellent,high,stable,stable,mod-stable,05,impostor
+high,mid,excellent,mid,unstable,unstable,stable,10,impostor
+mid,high,good,mid,stable,stable,stable,10,impostor
+mid,low,excellent,mid,unstable,stable,mod-stable,10,impostor
+mid,low,good,high,unstable,unstable,stable,15,impostor
+low,mid,excellent,high,unstable,stable,unstable,10,impostor
+mid,mid,good,mid,unstable,stable,unstable,10,impostor
+low,mid,excellent,mid,stable,stable,stable,10,impostor
+low,low,good,mid,unstable,stable,unstable,10,impostor
+low,low,good,mid,stable,stable,stable,07,impostor
+low,mid,good,mid,stable,stable,stable,15,impostor
+high,high,good,high,unstable,stable,stable,15,impostor
+mid,mid,good,mid,stable,stable,stable,10,impostor
+low,mid,good,mid,unstable,stable,stable,10,impostor
+mid,mid,good,mid,unstable,stable,mod-stable,10,impostor
+mid,low,excellent,mid,stable,stable,unstable,10,impostor
+mid,mid,good,high,stable,stable,stable,10,impostor
+mid,mid,excellent,mid,stable,stable,mod-stable,10,impostor
+mid,mid,excellent,mid,unstable,unstable,stable,10,impostor
+mid,mid,excellent,mid,stable,stable,stable,10,impostor
+mid,mid,excellent,mid,unstable,stable,stable,15,impostor
+mid,mid,good,mid,unstable,stable,stable,15,impostor
+mid,mid,good,mid,stable,stable,stable,10,genuine
+mid,mid,good,high,unstable,stable,mod-stable,10,genuine
+low,low,good,mid,unstable,stable,stable,10,genuine
+low,low,excellent,mid,stable,stable,stable,10,genuine
+mid,mid,excellent,mid,unstable,stable,stable,10,genuine
+high,high,excellent,high,stable,stable,unstable,?,genuine
+mid,high,good,low,unstable,stable,stable,10,genuine
+mid,high,good,mid,unstable,mod-stable,mod-stable,10,genuine
+low,high,excellent,mid,unstable,stable,stable,10,genuine
+mid,low,excellent,high,unstable,stable,unstable,10,genuine
+high,high,excellent,mid,unstable,stable,mod-stable,10,genuine
+mid,mid,good,mid,unstable,stable,stable,15,genuine
+high,mid,good,high,stable,stable,unstable,15,genuine
