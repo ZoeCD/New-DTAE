@@ -177,13 +177,11 @@ class DTAE():
         for feature in self.model_features:
             if X[feature.name].isnull().any():
                 X = self.impute_data(X,feature)
+        data = calculate_imputation(self.model_features, X)
         return X
 
     def impute_data(self, X, feature):
         missing_value_objects_indexes = X[X[feature.name].isnull()].index.to_list()
-        mode = calculate_mode(X[feature.name])
-        feature.set_imputation_value(mode)
-        X.at[missing_value_objects_indexes, feature.name] = mode
         feature.set_missing_value_objects(missing_value_objects_indexes)
         return X
 
