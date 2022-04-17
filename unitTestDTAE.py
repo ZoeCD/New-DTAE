@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from DTAE import DTAE, ModelFeature
+from DTAE import DTAE, ModelFeature, calculate_imputation
 from pandas.util.testing import assert_frame_equal
 from sklearn.preprocessing import OneHotEncoder
 
@@ -331,6 +331,25 @@ class TestDTAE(unittest.TestCase):
              'col2': ['2', None, '2', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1'],
              'col3': ['A', 'C', 'C', 'A', 'A', 'C', 'A', 'C', 'A', 'C', 'A', 'A', 'C']})
         dtae.classify(X_test)
+
+
+    def test_calculate_imputation(self):
+
+        y = pd.DataFrame({
+            'class': ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']})
+        X = pd.DataFrame(
+            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', None, None, np.nan, np.nan],
+             'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
+             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
+
+        features = [
+            ModelFeature('col1', 0, ['1', '2']),
+            ModelFeature('col2', 1, ['2', '1']),
+            ModelFeature('col3', 2, ['A', 'C'])
+        ]
+        data = calculate_imputation(features, X)
+        self.assertFalse(data.isnull().values.any())
+
 
 
 

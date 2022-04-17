@@ -3,6 +3,7 @@ import pandas as pd
 from functools import reduce
 from sklearn import tree
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import _tree
@@ -10,6 +11,10 @@ from colorama import Fore, Back, Style
 from sklearn.neighbors import KNeighborsClassifier
 from PBC4cip.core.Evaluation import obtainAUCMulticlass
 from PBC4cip.core.Dataset import PandasDataset, FileDataset
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+
 
 
 class DTAE():
@@ -406,17 +411,42 @@ class DTAE():
 def calculate_mode(column):
     return column.mode()[0]
 
+def get_categorical_columns(features):
+    categorical = []
+    for feature in features:
+        if feature.type == 'Nominal':
+            categorical.append(feature.name)
+    return categorical
 
-def calculate_knn(X, feature, missing_indexes):
-    missing_values = X[missing_indexes]
-    missing_values = missing_values.drop(column=feature.name)
-    new_X = X.drop(missing_indexes)
-    new_y = X[feature.name]
-    new_X = new_X.drop(column=feature.name)
-    knn = KNeighborsClassifier(n_neighbors=5)
-    knn.fit(new_X, new_y)
-    results = knn.predict(missing_values)
-    return results
+def calculate_imputation(features, data):
+    categorical = get_categorical_columns(features)
+    encoders = []
+
+    for col in categorical:
+        series = data[col]
+
+        encoder = LabelEncoder().fit(series[series.notnull()])
+
+        data[col] = pd.Series(
+            encoder.transform(series[series.notnull()]),
+            index=series[series.notnull()].index)
+
+        encoders.append(encoder)
+
+    imp_cat = IterativeImputer(estimator=RandomForestClassifier(),
+                               initial_strategy='most_frequent',
+                               max_iter=10, random_state=0)
+
+    data[categorical] = imp_cat.fit_transform(data[categorical])
+
+    decoded = pd.DataFrame()
+    for encoder, col in zip(encoders, categorical):
+        data[col] = data[col].astype(int)
+        series = data[col]
+        decoded_series = encoder.inverse_transform(series)
+        data[col] = decoded_series
+
+    return data
 
 
 def obtainAUCBinary(tp, tn, fp, fn):
