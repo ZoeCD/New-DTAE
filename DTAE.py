@@ -9,7 +9,6 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import _tree
 from colorama import Fore, Back, Style
 from sklearn.neighbors import KNeighborsClassifier
-from PBC4cip.core.Evaluation import obtainAUCMulticlass
 from PBC4cip.core.Dataset import PandasDataset, FileDataset
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
@@ -433,19 +432,25 @@ def calculate_imputation(features, data):
 
     imp_cat = IterativeImputer(estimator=RandomForestClassifier(),
                                initial_strategy='most_frequent',
-                               max_iter=10, random_state=0)
+                               max_iter=10, random_state=0, skip_complete=True)
 
-    data[categorical] = imp_cat.fit_transform(data[categorical])
+    data_transformed = imp_cat.fit_transform(data[categorical])
+    all_missing = []
+    if data_transformed.shape[1] != len(categorical):
+        for feature in features:
+            if len(feature.missing_value_objects) == data_transformed.shape[0]:
+                all_missing.append(feature.name)
+                data_transformed = np.insert(data_transformed, feature.index, data[feature.name], axis=1)
+    data[categorical] = data_transformed
 
-    decoded = pd.DataFrame()
     for encoder, col in zip(encoders, categorical):
-        data[col] = data[col].astype(int)
-        series = data[col]
-        decoded_series = encoder.inverse_transform(series)
-        data[col] = decoded_series
+        if col not in all_missing:
+            data[col] = data[col].astype(int)
+            series = data[col]
+            decoded_series = encoder.inverse_transform(series)
+            data[col] = decoded_series
 
     return data
-
 
 def obtainAUCBinary(tp, tn, fp, fn):
     nPos = tp +fn

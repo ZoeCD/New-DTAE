@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score
 
 
 def main():
-    train_file = open('OCC Categorical Datasets/mushroom/mushroom.training1.arff', "r")
+    train_file = open('OCC Categorical Datasets/audiology/audiology.training5.arff', "r")
     train_dataset = arff.load(train_file)
     train_file.close()
     feature_names = list()
@@ -14,7 +14,7 @@ def main():
 
     train_dataset = pd.DataFrame(train_dataset['data'], columns=feature_names)
 
-    test_file = open('OCC Categorical Datasets/mushroom/mushroom.testing1.arff', "r")
+    test_file = open('OCC Categorical Datasets/audiology/audiology.testing5.arff', "r")
     test_dataset = pd.DataFrame(arff.load(test_file)['data'], columns=feature_names)
     test_file.close()
 
