@@ -2,7 +2,7 @@ import pandas as pd
 from DTAE import DTAE
 import arff
 from sklearn.metrics import roc_auc_score
-
+from colorama import Fore, Back, Style
 
 def main():
     train_file = open('OCC Categorical Datasets/audiology/audiology.training5.arff', "r")

@@ -93,7 +93,7 @@ class DTAE():
         return current_X[feature.name].to_numpy()
 
     def __create_classification_tree(self, X, y):
-        classifier = tree.DecisionTreeClassifier(random_state=0,max_depth=self.__tree_depth)
+        classifier = tree.DecisionTreeClassifier(random_state=0,max_depth=self.__tree_depth, ccp_alpha=0.025)
         classifier = classifier.fit(X,y)
         return classifier
 
