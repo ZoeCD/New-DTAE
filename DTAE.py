@@ -32,6 +32,7 @@ class DTAE():
         self.FEATURE_VALUES = 1
         self.model_features = []
         self.test_model_features = []
+        self.iterative_imputer = None
 
     def get_model(self):
         return self.__model
@@ -176,7 +177,7 @@ class DTAE():
         for feature in self.model_features:
             if X[feature.name].isnull().any():
                 X = self.impute_data(X,feature)
-        data = calculate_imputation(self.model_features, X)
+        data = self.__calculate_imputation(X)
         return X
 
     def impute_data(self, X, feature):
@@ -290,7 +291,11 @@ class DTAE():
     def __impute_data_instance(self, instance):
         for feature in self.model_features:
             if instance.iloc[:,feature.index].isnull().any():
-                instance.iloc[:,feature.index] = feature.get_imputation_value()
+                instance_encoded = feature.encoder.transform(instance)
+                instance_transformed = self.iterative_imputer.transform(instance_encoded)
+                instance_transformed = instance_transformed.astype(int)
+                instance_transformed = feature.encoder.inverse_transform(instance_transformed)
+                instance = instance_transformed
         return instance
 
     def classify_and_interpret(self, instance):
@@ -329,6 +334,48 @@ class DTAE():
             print(f"Classification score: {score_normal-score_outlier}")
         else:
             print(f"Classification score: {0.0}")
+
+    def __calculate_imputation(self, data):
+        categorical = get_categorical_columns_names(self.model_features)
+        categorical_features = get_categorical_columns(self.model_features)
+        encoders = []
+
+        for col in categorical:
+            series = data[col]
+
+            encoder = LabelEncoder().fit(series[series.notnull()])
+
+            data[col] = pd.Series(
+                encoder.transform(series[series.notnull()]),
+                index=series[series.notnull()].index)
+
+            encoders.append(encoder)
+
+        for encoder, feature in zip(encoders, categorical_features):
+            feature.encoder = encoder
+
+        imp_cat = IterativeImputer(estimator=RandomForestClassifier(),
+                                   initial_strategy='most_frequent',
+                                   max_iter=10, random_state=0, skip_complete=True)
+
+        data_transformed = imp_cat.fit_transform(data[categorical])
+        all_missing = []
+        if data_transformed.shape[1] != len(categorical):
+            for feature in self.model_features:
+                if len(feature.missing_value_objects) == data_transformed.shape[0]:
+                    all_missing.append(feature.name)
+                    data_transformed = np.insert(data_transformed, feature.index, data[feature.name], axis=1)
+        data[categorical] = data_transformed
+        self.iterative_imputer = imp_cat
+
+        for encoder, col in zip(encoders, categorical):
+            if col not in all_missing:
+                data[col] = data[col].astype(int)
+                series = data[col]
+                decoded_series = encoder.inverse_transform(series)
+                data[col] = decoded_series
+
+        return data
 
     def __print_rules(self, clf, sample_id, X_test, prediction, real, feature_names,class_names):
         '''By:  https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html'''
@@ -408,49 +455,20 @@ class DTAE():
 def calculate_mode(column):
     return column.mode()[0]
 
-def get_categorical_columns(features):
+
+def get_categorical_columns_names(features):
     categorical = []
     for feature in features:
         if feature.type == 'Nominal':
             categorical.append(feature.name)
     return categorical
 
-def calculate_imputation(features, data):
-    categorical = get_categorical_columns(features)
-    encoders = []
-
-    for col in categorical:
-        series = data[col]
-
-        encoder = LabelEncoder().fit(series[series.notnull()])
-
-        data[col] = pd.Series(
-            encoder.transform(series[series.notnull()]),
-            index=series[series.notnull()].index)
-
-        encoders.append(encoder)
-
-    imp_cat = IterativeImputer(estimator=RandomForestClassifier(),
-                               initial_strategy='most_frequent',
-                               max_iter=10, random_state=0, skip_complete=True)
-
-    data_transformed = imp_cat.fit_transform(data[categorical])
-    all_missing = []
-    if data_transformed.shape[1] != len(categorical):
-        for feature in features:
-            if len(feature.missing_value_objects) == data_transformed.shape[0]:
-                all_missing.append(feature.name)
-                data_transformed = np.insert(data_transformed, feature.index, data[feature.name], axis=1)
-    data[categorical] = data_transformed
-
-    for encoder, col in zip(encoders, categorical):
-        if col not in all_missing:
-            data[col] = data[col].astype(int)
-            series = data[col]
-            decoded_series = encoder.inverse_transform(series)
-            data[col] = decoded_series
-
-    return data
+def get_categorical_columns(features):
+    categorical = []
+    for feature in features:
+        if feature.type == 'Nominal':
+            categorical.append(feature)
+    return categorical
 
 def obtainAUCBinary(tp, tn, fp, fn):
     nPos = tp +fn
@@ -494,6 +512,7 @@ class ModelFeature:
         self.type = 'Numerical' if np.issubdtype(np.array(values).dtype, np.number) else 'Nominal'
         self.encoded_value_names = []
         self.imputation_value = None
+        self.encoder = None
 
     def get_name(self):
         return self.name

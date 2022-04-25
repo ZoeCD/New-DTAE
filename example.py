@@ -32,13 +32,16 @@ def main():
 
     auc = roc_auc_score(y_test, results)
 
-    print(f"AUC =  {auc}")
+    """print(f"AUC =  {auc}")
     print(1 - auc)
-
-    '''print(Style.RESET_ALL)
+"""
+    print(Style.RESET_ALL)
     print("-----------------------------------")
+
     dtae.classify_and_interpret(X_test.values[1])
     print("-----------------------------------")
+    '''
+    
     dtae.classify_and_interpret(X_test.values[5])
     print("-----------------------------------")
     dtae.classify_and_interpret(X_test.values[10])'''
