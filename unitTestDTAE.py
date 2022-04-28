@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from DTAE import DTAE, ModelFeature, calculate_imputation
+from DTAE import DTAE, ModelFeature
 from pandas.util.testing import assert_frame_equal
 from sklearn.preprocessing import OneHotEncoder
 
@@ -81,16 +81,11 @@ class TestDTAE(unittest.TestCase):
              'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
              'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
 
-        answer = pd.DataFrame(
-            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', '1', '1', '1', '1'],
-             'col2': ['2', '1', '2', '2', '1', '2', '2', '2', '2', '2', '2', '1', '1'],
-             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
-
-
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_answer = dtae._DTAE__handle_missing_data(X)
-        assert_frame_equal(answer, dtae_answer)
+        print(dtae_answer)
+        self.assertFalse(dtae_answer.isnull().values.any())
 
     def test_create_encoder(self):
         y = pd.DataFrame({
@@ -154,62 +149,26 @@ class TestDTAE(unittest.TestCase):
             ModelFeature('col3', 2, ['A', 'C'])
         ]
 
-        X_encoded = [[1., 0., 0., 1., 1., 0.],
-                     [0., 1., 1., 0., 0., 1.],
-                     [1., 0., 0., 1., 1., 0.],
-                     [1., 0., 0., 1., 1., 0.],
-                     [0., 1., 1., 0., 0., 1.],
-                     [0., 1., 0., 1., 0., 1.],
-                     [1., 0., 0., 1., 1., 0.],
-                     [1., 0., 0., 1., 1., 0.],
-                     [1., 0., 0., 1., 1., 0.],
-                     [1., 0., 0., 1., 0., 1.],
-                     [1., 0., 0., 1., 0., 1.],
-                     [1., 0., 1., 0., 1., 0.],
-                     [1., 0., 1., 0., 0., 1.]]
+        X_complete = pd.DataFrame(
+            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', '2', '2', '1', '2'],
+             'col2': ['2', '1', '2', '2', '1', '2', '2', '2', '2', '2', '1', '1', '1'],
+             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
 
-        col1_ans = [[0., 1., 1., 0.],
-                     [1., 0., 0., 1.],
-                     [0., 1., 1., 0.],
-                     [0., 1., 1., 0.],
-                     [1., 0., 0., 1.],
-                     [0., 1., 0., 1.],
-                     [0., 1., 1., 0.],
-                     [0., 1., 1., 0.],
-                     [0., 1., 1., 0.]]
+        encoder = OneHotEncoder(handle_unknown="ignore", sparse=False).fit(X_complete)
+        X_encoded = encoder.transform(X_complete)
 
-        col2_ans = [[1., 0., 1., 0.],
-                     [0., 1., 0., 1.],
-                     [1., 0., 1., 0.],
-                     [0., 1., 0., 1.],
-                     [0., 1., 0., 1.],
-                     [1., 0., 1., 0.],
-                     [1., 0., 1., 0.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 1., 0.],
-                     [1., 0., 0., 1.]]
-
-        col3_ans = [[1., 0., 0., 1.],
-                     [0., 1., 1., 0.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [0., 1., 1., 0.],
-                     [0., 1., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 0., 1.],
-                     [1., 0., 1., 0.],
-                     [1., 0., 1., 0.]]
+        col1_ans = X_encoded[:9,2:]
+        col2_ans = np.delete(X_encoded, [2, 3], axis=1)
+        col2_ans = np.delete(col2_ans, [3, 6, 10], axis=0)
+        col3_ans = X_encoded[:, :4]
 
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_X = dtae._DTAE__handle_missing_data(X)
         dtae._DTAE__set_encoder(dtae_X)
         dtae_X_encoded = dtae._DTAE__encode_data(dtae_X)
-        features = dtae.model_features
 
+        features = dtae.model_features
         dtae_col1_ans = dtae._DTAE__create_current_X_attributes(dtae_X_encoded, features[0])
         dtae_col2_ans = dtae._DTAE__create_current_X_attributes(dtae_X_encoded, features[1])
         dtae_col3_ans = dtae._DTAE__create_current_X_attributes(dtae_X_encoded, features[2])
@@ -332,23 +291,6 @@ class TestDTAE(unittest.TestCase):
              'col3': ['A', 'C', 'C', 'A', 'A', 'C', 'A', 'C', 'A', 'C', 'A', 'A', 'C']})
         dtae.classify(X_test)
 
-
-    def test_calculate_imputation(self):
-
-        y = pd.DataFrame({
-            'class': ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']})
-        X = pd.DataFrame(
-            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', None, None, np.nan, np.nan],
-             'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
-             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
-
-        features = [
-            ModelFeature('col1', 0, ['1', '2']),
-            ModelFeature('col2', 1, ['2', '1']),
-            ModelFeature('col3', 2, ['A', 'C'])
-        ]
-        data = calculate_imputation(features, X)
-        self.assertFalse(data.isnull().values.any())
 
 
 
