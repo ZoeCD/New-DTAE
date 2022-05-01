@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from functools import reduce
 from sklearn import tree
 from sklearn.model_selection import StratifiedKFold
@@ -73,6 +74,15 @@ class DTAE():
         self.__check_feature_nominal(feature)
         return self.__check_enough_instances(X, feature)
 
+    def __clean_invalid_features(self, X):
+        for feature in self.model_features:
+            if not self.__check_valid_feature(X, feature):
+                X = X.drop(columns=feature.name)
+            else:
+                self.__valid_features.append(feature)
+                feature.valid_feature_index = len(self.__valid_features) - 1
+        return X
+
     def __save_feature_attribute_names(self,feature, column_count, number_of_values):
         attribute_names = np.delete(self.__encoder.get_feature_names_out(), np.s_[column_count:column_count+number_of_values])
         self.__attribute_names_by_feature.append(attribute_names)
@@ -80,9 +90,8 @@ class DTAE():
 
     def __create_current_X_attributes(self, X, feature):
         column_start = 0
-        for f in self.model_features[:feature.index]:
+        for f in self.__valid_features[:feature.valid_feature_index]:
             column_start += len(f.values)
-
         feature_value_len = len(feature.values)
         X_train = np.delete(X, feature.missing_value_objects, axis=0)
         X_train = np.delete(X_train, np.s_[column_start:column_start+feature_value_len], axis=1)
@@ -136,19 +145,16 @@ class DTAE():
     def __train_feature_tree(self, X_encoded, X, feature):
         X_current = self.__create_current_X_attributes(X_encoded, feature)
         y_current = self.__create_current_y_class(X, feature)
-
         feature_weight, feature_values_weights = self.__calculate_weights(feature, X_current, y_current)
         classifier = self.__create_classification_tree(X_current, y_current)
 
         self.__features_weights.append(feature_weight)
         self.__feature_value_weights.append(feature_values_weights)
         self.__classifiers.append(classifier)
-        self.__valid_features.append(feature)
 
     def __train_trees(self, X, y):
         X_encoded = self.__encode_data(X)
-        for feature in self.model_features:
-            if self.__check_valid_feature(X, feature):
+        for feature in self.__valid_features:
                 self.__train_feature_tree(X_encoded, X, feature)
 
     def __check_valid_dataset(self, X, y):
@@ -193,6 +199,7 @@ class DTAE():
         self.__check_valid_dataset(X, y)
         self.__create_model(X)
         X = self.__handle_missing_data(X)
+        X = self.__clean_invalid_features(X)
         self.__set_encoder(X)
         self.__train_trees(X,y)
         self.__check_variability()
@@ -223,23 +230,23 @@ class DTAE():
         return probabilities
 
     def __sum_outlier(self, classifier_result, actual_value, feature_index):
-            current_sum_outlier = 0
-            count_outlier_votes = 0
-            score_outlier = 0
+        current_sum_outlier = 0
+        count_outlier_votes = 0
+        score_outlier = 0
 
-            for key, j in zip(classifier_result.keys(), range(len(classifier_result))):
-                if key != actual_value and classifier_result[key] > 0:
-                    current_sum_outlier += self.__feature_value_weights[feature_index][j] * classifier_result[key]
-                    count_outlier_votes += 1
+        for key, j in zip(classifier_result.keys(), range(len(classifier_result))):
+            if key != actual_value and classifier_result[key] > 0:
+                current_sum_outlier += self.__feature_value_weights[feature_index][j] * classifier_result[key]
+                count_outlier_votes += 1
 
-            if count_outlier_votes > 0:
-                score_outlier = self.__features_weights[feature_index] * current_sum_outlier/count_outlier_votes
+        if count_outlier_votes > 0:
+            score_outlier = self.__features_weights[feature_index] * current_sum_outlier/count_outlier_votes
 
-            return score_outlier
+        return score_outlier
 
     def __create_current_instance(self, instance, feature):
         column_start = 0
-        for f in self.model_features[:feature.index]:
+        for f in self.__valid_features[:feature.valid_feature_index]:
             column_start += len(f.values)
         feature_value_len = len(feature.values)
         current_instance = np.delete(instance, np.s_[column_start:column_start+feature_value_len])
@@ -249,13 +256,13 @@ class DTAE():
         feature = self.__valid_features[feature_index]
         current_instance = self.__create_current_instance(encoded_instance, feature)
         classifier_results = self.__get_classifier_result(feature_index, current_instance)
-        actual_feature_value = np.where(feature.values == instance[feature.index])[0]
+        actual_feature_value = np.where(feature.values == instance[feature.valid_feature_index])[0]
 
         if not actual_feature_value.size == 0:
             actual_feature_value = actual_feature_value[0]
             feature_weight, actual_feature_value_weight = self.__get_weights(feature_index, actual_feature_value)
-            score_normal = feature_weight * actual_feature_value_weight * classifier_results[instance[feature.index]]
-            score_outlier = self.__sum_outlier(classifier_results, instance[feature.index], feature_index)
+            score_normal = feature_weight * actual_feature_value_weight * classifier_results[instance[feature.valid_feature_index]]
+            score_outlier = self.__sum_outlier(classifier_results, instance[feature.valid_feature_index], feature_index)
         else:
             score_normal, score_outlier = 0,0
 
@@ -278,9 +285,18 @@ class DTAE():
         else:
             return [0.0]
 
+    def __delete_invalid_features(self, X):
+        names = []
+        for f in self.__valid_features:
+            names.append(f.name)
+
+        X = X.filter(names)
+        return X
+
     def classify(self, instances):
         self.__check_if_trained()
         instances = self.__handle_missing_data(instances)
+        instances = self.__delete_invalid_features(instances)
         encoded_instances = self.__encode_data(instances)
         results = list()
         for i in range(len(instances.values)):
@@ -297,43 +313,6 @@ class DTAE():
                 instance_transformed = feature.encoder.inverse_transform(instance_transformed)
                 instance = instance_transformed
         return instance
-
-    def classify_and_interpret(self, instance):
-        print(f"Input: {instance}")
-        print(f"Output: ")
-        instance = pd.DataFrame(np.reshape(instance,(1,-1)))
-        instance_imputed = self.__impute_data_instance(instance.copy())
-        encoded_instance = self.__encoder.transform(instance_imputed)
-
-        score_normal, score_outlier = 0,0
-        for feature_index in range(len(self.__valid_features)):
-            feature = self.__valid_features[feature_index]
-            if not pd.isnull(instance[feature.index][0]):
-                print(Style.BRIGHT + f"Feature: {feature.name}")
-                print(Style.RESET_ALL)
-
-                normal, outlier = self.__calculate_classification_scores(feature_index, instance_imputed.values[0], encoded_instance)
-                score_outlier += outlier
-                score_normal += normal
-
-                current_instance = self.__create_current_instance(encoded_instance, feature)
-                classifier = self.__classifiers[feature_index]
-                classifier_result = classifier.predict(np.reshape(current_instance,(1,-1)))[0]
-
-                real_value = instance.iloc[:,feature.index][0]
-
-
-                print(f"Real value: {real_value}")
-                print(f"Prediction: {classifier_result}")
-                print(f"Score normal: {normal}")
-                print(f"Score outlier: {outlier}")
-
-                self.__print_rules(classifier, 0, current_instance.reshape(1, -1), classifier_result, real_value, feature.encoded_value_names,feature.values)
-        total_score = score_normal + score_outlier
-        if total_score > 0:
-            print(f"Classification score: {score_normal-score_outlier}")
-        else:
-            print(f"Classification score: {0.0}")
 
     def __calculate_imputation(self, data):
         categorical = get_categorical_columns_names(self.model_features)
@@ -377,7 +356,49 @@ class DTAE():
 
         return data
 
-    def __print_rules(self, clf, sample_id, X_test, prediction, real, feature_names,class_names):
+    def classify_and_interpret(self, instance):
+        print(f"Input: {instance}")
+        print(f"Output: ")
+        names = []
+        for f in self.model_features:
+            names.append(f.name)
+        instance = pd.DataFrame(np.reshape(instance,(1,-1)),columns=names)
+        instance_imputed = self.__impute_data_instance(instance.copy())
+        instance_imputed = self.__delete_invalid_features(instance_imputed)
+        encoded_instance = self.__encoder.transform(instance_imputed)
+
+        score_normal, score_outlier = 0,0
+        for feature_index in range(len(self.__valid_features)):
+            feature = self.__valid_features[feature_index]
+            if not pd.isnull(instance[feature.name][0]):
+                print(Style.BRIGHT + f"Feature: {feature.name}")
+                print(Style.RESET_ALL)
+
+                normal, outlier = self.__calculate_classification_scores(feature_index, instance_imputed.values[0], encoded_instance)
+                score_outlier += outlier
+                score_normal += normal
+
+                current_instance = self.__create_current_instance(encoded_instance, feature)
+                classifier = self.__classifiers[feature_index]
+
+                classifier_result = classifier.predict(np.reshape(current_instance,(1,-1)))[0]
+
+                real_value = instance.iloc[:,feature.valid_feature_index][0]
+
+
+                print(f"Real value: {real_value}")
+                print(f"Prediction: {classifier_result}")
+                print(f"Score normal: {normal}")
+                print(f"Score outlier: {outlier}")
+
+                self.__print_rules(classifier, 0, current_instance.reshape(1, -1), classifier_result, real_value, feature.encoded_value_names)
+        total_score = score_normal + score_outlier
+        if total_score > 0:
+            print(f"Classification score: {score_normal-score_outlier}")
+        else:
+            print(f"Classification score: {0.0}")
+
+    def __print_rules(self, clf, sample_id, X_test, prediction, real, feature_names):
         '''By:  https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html'''
 
         tree_ = clf.tree_
@@ -404,10 +425,15 @@ class DTAE():
 
         values_leaf = tree_.value[leaf_id[sample_id]]
         dir = {}
-        for v in range(len(values_leaf[0])):
-            dir[class_names[v]] = str(np.round(100.0*values_leaf[0][v]/np.sum(values_leaf[0]),2)) + '%'
+        classifier_classes = clf.classes_
 
-        print(color + "If ", end="")
+        for v in range(len(values_leaf[0])):
+            dir[classifier_classes[v]] = str(np.round(100.0*values_leaf[0][v]/np.sum(values_leaf[0]),2)) + '%'
+
+        if clf.get_n_leaves() > 1:
+            print(color + "If ", end="")
+        else:
+            print(color + f"Classifier has only one node, results are: {dir}")
 
         for node_id in node_index:
             # continue to the next node if it is a leaf node
@@ -418,13 +444,13 @@ class DTAE():
             if X_test[sample_id, feature[node_id]] == 1.0:
                 threshold_value = feature_name[node_id].split('_')
                 threshold_decision = "=="
-                threshold_name = threshold_value[0]
-                threshold_value = ' '.join([str(elem) for elem in threshold_value[1:]])
+                threshold_name = ' '.join([str(elem) for elem in threshold_value[:-1]])
+                threshold_value = threshold_value[-1]
             else:
                 threshold_value = feature_name[node_id].split('_')
                 threshold_decision = "!="
-                threshold_name = threshold_value[0]
-                threshold_value = ' '.join([str(elem) for elem in threshold_value[1:]])
+                threshold_name = ' '.join([str(elem) for elem in threshold_value[:-1]])
+                threshold_value = threshold_value[-1]
 
             if node_id == node_index[-2]:
                 print(
@@ -450,6 +476,17 @@ class DTAE():
                 )
 
         print(Style.RESET_ALL)
+
+    def plot_feature_tree(self, feature,classifier):
+        attribute_names = feature.encoded_value_names
+        plt.figure(figsize=(10, 6))
+        plt.title(feature.name)
+        _ = tree.plot_tree(classifier,
+                           class_names=feature.values,
+                           filled=True,
+                           feature_names=attribute_names,
+                           proportion=True)
+        plt.show()
 
 
 def calculate_mode(column):
@@ -513,6 +550,7 @@ class ModelFeature:
         self.encoded_value_names = []
         self.imputation_value = None
         self.encoder = None
+        self.valid_feature_index = None
 
     def get_name(self):
         return self.name

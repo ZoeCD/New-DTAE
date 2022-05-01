@@ -293,7 +293,23 @@ class TestDTAE(unittest.TestCase):
 
 
 
+    def test_save_feature_attribute_names(self):
 
+        y = pd.DataFrame({
+            'class': ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']})  # 13
+        X = pd.DataFrame(
+            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', None, None, np.nan, np.nan],
+             'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
+             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
+
+        dtae = DTAE()
+        dtae.train(X, y)
+
+        features = dtae.model_features
+
+        np.testing.assert_array_equal(features[0].encoded_value_names, ['col2_1', 'col2_2', 'col3_A', 'col3_C'])
+        np.testing.assert_array_equal(features[1].encoded_value_names, ['col1_1', 'col1_2', 'col3_A', 'col3_C'])
+        np.testing.assert_array_equal(features[2].encoded_value_names, ['col1_1', 'col1_2', 'col2_1', 'col2_2'])
 
 
 
