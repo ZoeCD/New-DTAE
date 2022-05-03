@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from DTAE import DTAE, ModelFeature
+from DTAE import DTAE, Feature
 from pandas.util.testing import assert_frame_equal
 from sklearn.preprocessing import OneHotEncoder
 
@@ -46,9 +46,9 @@ class TestDTAE(unittest.TestCase):
              'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A']})
 
         answer = [
-            ModelFeature('col1', 0, ['1', '2']),
-            ModelFeature('col2', 1, ['2', '1']),
-            ModelFeature('col3', 2, ['A', 'C'])
+            Feature('col1', 0, ['1', '2']),
+            Feature('col2', 1, ['2', '1']),
+            Feature('col3', 2, ['A', 'C'])
         ]
 
         dtae = DTAE()
@@ -118,10 +118,10 @@ class TestDTAE(unittest.TestCase):
              'unvalidFewInstances': ['A', 'C', 'A', 'B', 'A', 'A', 'B', 'D', 'A', 'A', 'A', 'A', 'A']})
 
         features = [
-            ModelFeature('validFeature', 0, ['1', '2']),
-            ModelFeature('unvalidNumerical', 1, [2, 1]),
-            ModelFeature('unvalidOneClass', 2,  ['A']),
-            ModelFeature('unvalidFewInstances', 3, ['A', 'C', 'B', 'D'])
+            Feature('validFeature', 0, ['1', '2']),
+            Feature('unvalidNumerical', 1, [2, 1]),
+            Feature('unvalidOneClass', 2, ['A']),
+            Feature('unvalidFewInstances', 3, ['A', 'C', 'B', 'D'])
         ]
         dtae = DTAE()
 
@@ -144,9 +144,9 @@ class TestDTAE(unittest.TestCase):
              'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
 
         answer = [
-            ModelFeature('col1', 0, ['1', '2']),
-            ModelFeature('col2', 1, ['2', '1']),
-            ModelFeature('col3', 2, ['A', 'C'])
+            Feature('col1', 0, ['1', '2']),
+            Feature('col2', 1, ['2', '1']),
+            Feature('col3', 2, ['A', 'C'])
         ]
 
         X_complete = pd.DataFrame(
@@ -165,6 +165,7 @@ class TestDTAE(unittest.TestCase):
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_X = dtae._DTAE__handle_missing_data(X)
+        dtae_X = dtae._DTAE__clean_invalid_features(dtae_X)
         dtae._DTAE__set_encoder(dtae_X)
         dtae_X_encoded = dtae._DTAE__encode_data(dtae_X)
 
@@ -193,7 +194,9 @@ class TestDTAE(unittest.TestCase):
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_X = dtae._DTAE__handle_missing_data(X)
+        dtae_X = dtae._DTAE__clean_invalid_features(dtae_X)
         dtae._DTAE__set_encoder(dtae_X)
+
         dtae_X_encoded = dtae._DTAE__encode_data(dtae_X)
         features = dtae.model_features
 
@@ -238,14 +241,16 @@ class TestDTAE(unittest.TestCase):
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_X = dtae._DTAE__handle_missing_data(X)
+        dtae_X = dtae._DTAE__clean_invalid_features(dtae_X)
         dtae._DTAE__set_encoder(dtae_X)
         features = dtae.model_features
 
-        X_train = pd.DataFrame(
+        X_test = pd.DataFrame(
             {'col1': [np.nan, '2', '2', '1', None, '2', '1', '2', '1', '1', '1',  '2', np.nan],
              'col2': ['2', None, '2', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1'],
              'col3': ['A', 'C', 'C', 'A', 'A', 'C', 'A', 'C', 'A', 'C', 'A', 'A', 'C']})
-        dtae_X_train = dtae._DTAE__handle_missing_data(X_train)
+        dtae_X_train = dtae._DTAE__handle_missing_data(X_test)
+        dtae_X_train = dtae._DTAE__delete_invalid_features(dtae_X_train)
         dtae_X_encoded = [[1., 0., 0., 1., 1., 0.],
                            [0., 1., 0., 1., 0., 1.],
                            [0., 1., 0., 1., 0., 1.],
@@ -290,8 +295,6 @@ class TestDTAE(unittest.TestCase):
              'col2': ['2', None, '2', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1'],
              'col3': ['A', 'C', 'C', 'A', 'A', 'C', 'A', 'C', 'A', 'C', 'A', 'A', 'C']})
         dtae.classify(X_test)
-
-
 
     def test_save_feature_attribute_names(self):
 
