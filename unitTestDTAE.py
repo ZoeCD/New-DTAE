@@ -63,15 +63,23 @@ class TestDTAE(unittest.TestCase):
         incomplete_X = pd.DataFrame(
             {'col1': ['1', '2', '1', np.nan, '2', '2', '1'],
              'col2': [np.nan, '2', np.nan, '1', '1', '2', '1'],
-             'col3': ['A', 'C', 'A', 'A', 'C', np.nan, 'A']})
+             'col3': [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+             'col4': ['A', 'C', 'A', 'A', 'C', np.nan, 'A']})
+
+        answer2 = [
+            Feature('col1', 0, ['1', '2']),
+            Feature('col2', 1, ['2', '1']),
+            Feature('col3', 2, [np.nan]),
+            Feature('col4', 3, ['A', 'C'])
+        ]
 
         dtae = DTAE()
         dtae._DTAE__create_model(incomplete_X)
         dtae_answer = dtae.model_features
         for i in range(len(dtae_answer)):
-            self.assertEqual(answer[i].name, dtae_answer[i].name)
+            self.assertEqual(answer2[i].name, dtae_answer[i].name)
             for j in range(len(dtae_answer[i].values)):
-                self.assertEqual(answer[i].values[j], dtae_answer[i].values[j])
+                self.assertEqual(answer2[i].values[j], dtae_answer[i].values[j])
 
     def test_impute_data(self):
         y = pd.DataFrame({
@@ -79,12 +87,13 @@ class TestDTAE(unittest.TestCase):
         X = pd.DataFrame(
             {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', None, None, np.nan, np.nan],
              'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
-             'col3': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
+             'col3': [None, None, None, None, None, None, None, None, None, None, None, None, None],
+             'col4': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
 
         dtae = DTAE()
         dtae._DTAE__create_model(X)
         dtae_answer = dtae._DTAE__handle_missing_data(X)
-        print(dtae_answer)
+        dtae_answer = dtae._DTAE__clean_invalid_features(dtae_answer)
         self.assertFalse(dtae_answer.isnull().values.any())
 
     def test_create_encoder(self):
@@ -313,6 +322,51 @@ class TestDTAE(unittest.TestCase):
         np.testing.assert_array_equal(features[0].encoded_value_names, ['col2_1', 'col2_2', 'col3_A', 'col3_C'])
         np.testing.assert_array_equal(features[1].encoded_value_names, ['col1_1', 'col1_2', 'col3_A', 'col3_C'])
         np.testing.assert_array_equal(features[2].encoded_value_names, ['col1_1', 'col1_2', 'col2_1', 'col2_2'])
+
+
+    def test_get_classifier_result(self):
+        y = pd.DataFrame({
+            'class': ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']})  # 13
+        X = pd.DataFrame(
+            {'col1': ['1', '2', '1', '1', '2', '2', '1', '1', '1', None, None, np.nan, np.nan],
+             'col2': ['2', '1', '2', None, '1', '2', np.nan, '2', '2', '2', None, '1', '1'],
+             'col3': [None, None, None, None, None, None, None, None, None, None, None, None, None],
+             'col4': ['A', 'C', 'A', 'A', 'C', 'C', 'A', 'A', 'A', 'C', 'C', 'A', 'C']})
+
+        dtae = DTAE()
+        dtae.train(X, y)
+
+        features = dtae._DTAE__valid_features
+
+        y_test = pd.DataFrame({
+            'class': ['1', '1', '0', '1', '1', '0', '1', '0', '1', '0', '1', '0', '1']})
+        X_test = pd.DataFrame(
+            {'col1': [np.nan, '2', '3', '1', None, '2', '1', '2', '3', '1', '1', '2', np.nan],
+             'col2': ['2', None, '2', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1'],
+             'col3': [None, None, None, None, None, None, None, None, None, None, None, None, None],
+             'col4': ['A', 'C', 'C', 'A', 'A', 'C', 'A', 'C', 'A', 'C', 'A', 'A', 'C']})
+
+        instances = dtae._DTAE__handle_missing_data(X_test)
+        instances = dtae._DTAE__delete_invalid_features(instances)
+        encoded_instances = dtae._DTAE__encode_data(instances)
+
+        current_instance = dtae._DTAE__create_current_instance(encoded_instances[0], features[0])
+        answer = ['1', '2']
+        dtae_answer = list(dtae._DTAE__get_classifier_result(0, current_instance).keys())
+        np.testing.assert_array_equal(dtae_answer, answer)
+
+        current_instance = dtae._DTAE__create_current_instance(encoded_instances[0], features[1])
+        answer = ['1', '2']
+        dtae_answer = list(dtae._DTAE__get_classifier_result(1, current_instance).keys())
+        np.testing.assert_array_equal(dtae_answer, answer)
+
+        current_instance = dtae._DTAE__create_current_instance(encoded_instances[0], features[2])
+        answer = ['A', 'C']
+        dtae_answer = list(dtae._DTAE__get_classifier_result(2, current_instance).keys())
+        np.testing.assert_array_equal(dtae_answer, answer)
+
+
+
 
 
 
