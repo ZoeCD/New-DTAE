@@ -4,6 +4,7 @@ import numpy as np
 from DTAE import DTAE, Feature
 from pandas.util.testing import assert_frame_equal
 from sklearn.preprocessing import OneHotEncoder
+import arff
 
 
 
@@ -365,7 +366,24 @@ class TestDTAE(unittest.TestCase):
         dtae_answer = list(dtae._DTAE__get_classifier_result(2, current_instance).keys())
         np.testing.assert_array_equal(dtae_answer, answer)
 
+    def test_classifier_depth(self):
+        with open('TrainingDatasetNames.txt', 'r', encoding='UTF-8') as file:
+            for line in file:
+                line = line.split('\n')
+                train_file = open(line[0], "r")
+                train_dataset = arff.load(train_file)
+                train_file.close()
+                feature_names = list()
+                for attribute in train_dataset['attributes']:
+                    feature_names.append(attribute[0])
 
+                train_dataset = pd.DataFrame(train_dataset['data'], columns=feature_names)
+                X_train = train_dataset.iloc[:, 0:train_dataset.shape[1] - 1]
+                y_train = train_dataset.iloc[:, train_dataset.shape[1] - 1: train_dataset.shape[1]]
+                dtae = DTAE()
+                dtae.train(X_train, y_train)
+                for classifier in dtae._DTAE__classifiers:
+                    self.assertGreater(classifier.get_depth(), 1)
 
 
 

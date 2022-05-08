@@ -89,8 +89,14 @@ class DTAE():
 
     def __create_classification_tree(self, X: PandasDataset, y: np.ndarray)\
             -> sklearn.tree.DecisionTreeClassifier:
-        classifier = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=0.025)
-        classifier = classifier.fit(X,y)
+        alphas = [0.025, 0.010, 0.005]
+        for alpha in alphas:
+            classifier = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=alpha)
+            classifier = classifier.fit(X, y)
+            if classifier.get_depth() > 1:
+                return classifier
+        classifier = tree.DecisionTreeClassifier(random_state=0)
+        classifier = classifier.fit(X, y)
         return classifier
 
     def __make_cross_validation_matrix(self, X: np.ndarray, y: np.ndarray)\
