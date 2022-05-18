@@ -370,7 +370,10 @@ class TestDTAE(unittest.TestCase):
         with open('TrainingDatasetNames.txt', 'r', encoding='UTF-8') as file:
             for line in file:
                 line = line.split('\n')
-                train_file = open(line[0], "r")
+                file = line[0].split(".")
+                file_name = "/Users/zoe/PycharmProjects/New-DTAE/OCC Categorical Datasets/" \
+                            "OCC Categorical Datasets/" + file[0] + "/" + line[0]
+                train_file = open(file_name, "r")
                 train_dataset = arff.load(train_file)
                 train_file.close()
                 feature_names = list()
@@ -383,7 +386,7 @@ class TestDTAE(unittest.TestCase):
                 dtae = DTAE()
                 dtae.train(X_train, y_train)
                 for classifier in dtae._DTAE__classifiers:
-                    self.assertGreater(classifier.get_depth(), 1)
+                    self.assertGreater(classifier.get_depth(), 0)
 
 
 

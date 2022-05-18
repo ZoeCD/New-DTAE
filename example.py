@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score
 from colorama import Fore, Back, Style
 
 def main():
-    train_file = open('OCC Categorical Datasets/vote/vote.training1.arff', "r")
+    train_file = open('OCC Categorical Datasets/balloons/balloons.training3.arff', "r")
     train_dataset = arff.load(train_file)
     train_file.close()
     feature_names = list()
@@ -14,16 +14,16 @@ def main():
 
     train_dataset = pd.DataFrame(train_dataset['data'], columns=feature_names)
 
-    test_file = open('OCC Categorical Datasets/vote/vote.testing1.arff', "r")
+    test_file = open('OCC Categorical Datasets/balloons/balloons.testing3.arff', "r")
     test_dataset = pd.DataFrame(arff.load(test_file)['data'], columns=feature_names)
     test_file.close()
 
     
-    X_train = train_dataset.iloc[:, 0:train_dataset.shape[1]-1]
-    y_train =  train_dataset.iloc[:, train_dataset.shape[1]-1 : train_dataset.shape[1]]
+    X_train = train_dataset.iloc[:,0:train_dataset.shape[1]-1]
+    y_train = train_dataset.iloc[:,train_dataset.shape[1]-1:train_dataset.shape[1]]
 
-    X_test = test_dataset.iloc[:,  0:test_dataset.shape[1]-1]
-    y_test = test_dataset.iloc[:, test_dataset.shape[1]-1 : test_dataset.shape[1]]
+    X_test = test_dataset.iloc[:, 0:test_dataset.shape[1]-1]
+    y_test = test_dataset.iloc[:, test_dataset.shape[1]-1: test_dataset.shape[1]]
 
     dtae = DTAE()
     dtae.train(X_train, y_train)
