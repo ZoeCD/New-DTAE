@@ -1,0 +1,5 @@
+mushroom.training1.arff
+mushroom.training2.arff
+mushroom.training3.arff
+mushroom.training4.arff
+mushroom.training5.arff
