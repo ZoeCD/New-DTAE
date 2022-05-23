@@ -16,6 +16,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from Feature import Feature
+import re
 
 
 class DTAE():
@@ -401,8 +402,9 @@ class DTAE():
                 print(f"Score normal: {normal}")
                 print(f"Score outlier: {outlier}")
 
-                self.__print_rules(classifier, current_instance.reshape(1, -1), classifier_result, real_value,
+                decisionPath = self.__print_rules(classifier, current_instance.reshape(1, -1), classifier_result, real_value,
                                    feature.encoded_value_names)
+                print(decisionPath)
         total_score = score_normal + score_outlier
         if total_score > 0:
             print(f"Classification score: {score_normal-score_outlier}")
@@ -441,10 +443,12 @@ class DTAE():
         for v in range(len(values_leaf[0])):
             dir[classifier_classes[v]] = str(np.round(100.0*values_leaf[0][v]/np.sum(values_leaf[0]),2)) + '%'
 
+        decision_path = ""
+
         if clf.get_n_leaves() > 1:
-            print(color + "If ", end="")
+            decision_path += "If "
         else:
-            print(color + f"Classifier has only one node, results are: {dir}")
+            decision_path += f"Classifier has only one node, results are: {dir}"
 
         for node_id in node_index:
             # continue to the next node if it is a leaf node
@@ -464,29 +468,13 @@ class DTAE():
                 threshold_value = threshold_value[-1]
 
             if node_id == node_index[-2]:
-                print(
-                        color +
-                        "({feature_name} "
-                        "{decision} {threshold_value}) then {values})".format(
-                            feature_name=threshold_name,
-                            decision = threshold_decision,
-                            threshold_value=threshold_value,
-                            values = dir
-                        ), end="\n"
-                    )
+                decision_path += f"({threshold_name} {threshold_decision} {threshold_value}) then {dir} \n"
             else:
 
-                print(
-                    color +
-                    "({feature_name} "
-                    "{decision} {threshold_value}) AND ".format(
-                        feature_name=threshold_name,
-                        decision = threshold_decision,
-                        threshold_value=threshold_value,
-                    ), end=""
-                )
+                decision_path += f"({threshold_name} {threshold_decision} {threshold_value}) AND "
 
         print(Style.RESET_ALL)
+        return decision_path
 
     def plot_feature_tree(self, feature: Feature, classifier: tree.DecisionTreeClassifier):
         attribute_names = feature.encoded_value_names
@@ -498,6 +486,15 @@ class DTAE():
                            feature_names=attribute_names,
                            proportion=True)
         plt.show()
+
+
+def analyzeDecisionPath(path, features):
+    prepositions = []
+    for feature in features:
+        x = re.findall(f"([(]{feature.name}.(==|!=).\w*[)])", path)
+        prepositions.append(x[0][0])
+        print(x[0][0])
+    return prepositions
 
 
 def get_categorical_columns_names(features: list)\

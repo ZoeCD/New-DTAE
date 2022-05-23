@@ -1,10 +1,11 @@
 import unittest
 import pandas as pd
 import numpy as np
-from DTAE import DTAE, Feature
+from DTAE import DTAE, Feature, analyzeDecisionPath
 from pandas.util.testing import assert_frame_equal
 from sklearn.preprocessing import OneHotEncoder
 import arff
+import re
 
 
 
@@ -366,7 +367,7 @@ class TestDTAE(unittest.TestCase):
         dtae_answer = list(dtae._DTAE__get_classifier_result(2, current_instance).keys())
         np.testing.assert_array_equal(dtae_answer, answer)
 
-    def test_classifier_depth(self):
+    def test_classifier_depth_grater_than_cero(self):
         with open('TrainingDatasetNames.txt', 'r', encoding='UTF-8') as file:
             for line in file:
                 line = line.split('\n')
@@ -389,7 +390,36 @@ class TestDTAE(unittest.TestCase):
                     self.assertGreater(classifier.get_depth(), 0)
 
 
+    def test_identify_propositions(self):
+
+        # One feature
+        path = "If (age == adult) then {'dip': '100.0%', 'stretch': '0.0%'})"
+        features = [Feature("age", 0, ["1", "0"])]
+        prepositions = analyzeDecisionPath(path, features)
+        answer = [("(age == adult)")]
+
+        for p, a in zip(prepositions, answer):
+            self.assertEqual(p, a)
+
+        path = "If (color == purple) AND (color != yellow) AND (age == adult) then {'dip': '100.0%', 'stretch': '0.0%'})"
+        features = [Feature("color", 0, ["1","0"]),
+                    Feature("age", 0, ["1","0"])]
+        prepositions = analyzeDecisionPath(path, features)
+        answer = [("(color == purple)"),("(age == adult)"),("(color != yellow)")]
+        for p, a in zip(prepositions, answer):
+            self.assertEqual(p, a)
 
 
+    def test_decision_path_reduction(self):
 
+        # Simple case - no reduction
+        path = "If (age == adult) then {'dip': '100.0%', 'stretch': '0.0%'})"
+        answer = "If (age == adult) then {'dip': '100.0%', 'stretch': '0.0%'})"
 
+        # Two features - no reduction
+        path = "If (age == adult) AND (color == yellow) then {'dip': '100.0%', 'stretch': '0.0%'})"
+        answer = "If (age == adult) AND (color == yellow) then {'dip': '100.0%', 'stretch': '0.0%'})"
+
+        # Simple case - reduction
+        path = "If (color != yellow) AND (color != purple) then {'dip': '100.0%', 'stretch': '0.0%'})"
+        answer = "If (color ∉ {yellow, purple}) then {'dip': '100.0%', 'stretch': '0.0%'})"
