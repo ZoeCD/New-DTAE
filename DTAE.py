@@ -489,12 +489,26 @@ class DTAE():
 
 
 def analyzeDecisionPath(path, features):
-    prepositions = []
-    for feature in features:
-        x = re.findall(f"([(]{feature.name}.(==|!=).\w*[)])", path)
-        prepositions.append(x[0][0])
-        print(x[0][0])
-    return prepositions
+    newPath = "If"
+    for i in range(len(features)):
+        feature = features[i]
+        prep = re.findall(f"([(]{feature.name}....\w*[)])", path)
+        if len(prep) > 0:
+            values = re.findall(f"(?<=!= |== )[a-z]+", str(prep))
+            if len(values) > 1:
+                values = ", ".join(values)
+                newString = f" ({feature.name} != " + values + ") "
+            else:
+                newString = " " + " ".join(prep) + " "
+            if i > 0:
+                newPath += "AND" + newString
+            else:
+                newPath += newString
+
+    probabilities = re.search("{.*}", path)
+    newPath += "then " + str(probabilities.group())
+    print(newPath)
+    return newPath
 
 
 def get_categorical_columns_names(features: list)\
