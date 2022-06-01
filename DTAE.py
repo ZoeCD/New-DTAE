@@ -405,6 +405,7 @@ class DTAE():
                 decisionPath = self.__print_rules(classifier, current_instance.reshape(1, -1), classifier_result, real_value,
                                    feature.encoded_value_names)
                 print(decisionPath)
+                #analyzeDecisionPath(decisionPath, self.__valid_features)
         total_score = score_normal + score_outlier
         if total_score > 0:
             print(f"Classification score: {score_normal-score_outlier}")
@@ -456,15 +457,23 @@ class DTAE():
                 continue
 
             # check if value of the split feature for sample 0 is below threshold
+            print("PROBANDO NAMES")
+            print(feature[node_id])
+            print(feature_name[node_id])
+            print(feature_name[node_id].split('_'))
             if X_test[sample_id, feature[node_id]] == 1.0:
                 threshold_value = feature_name[node_id].split('_')
                 threshold_decision = "=="
-                threshold_name = ' '.join([str(elem) for elem in threshold_value[:-1]])
+                threshold_name = '_'.join([str(elem) for elem in threshold_value[:-1]])
                 threshold_value = threshold_value[-1]
             else:
-                threshold_value = feature_name[node_id].split('_')
+                """threshold_value = feature_name[node_id].split('_')
                 threshold_decision = "!="
                 threshold_name = ' '.join([str(elem) for elem in threshold_value[:-1]])
+                threshold_value = threshold_value[-1]"""
+                threshold_value = feature_name[node_id].split('_')
+                threshold_decision = "!="
+                threshold_name = '_'.join([str(elem) for elem in threshold_value[:-1]])
                 threshold_value = threshold_value[-1]
 
             if node_id == node_index[-2]:
@@ -489,25 +498,30 @@ class DTAE():
 
 
 def analyzeDecisionPath(path, features):
+    #print(f"PATH {path}")
     newPath = "If"
+    not_first = False
     for i in range(len(features)):
         feature = features[i]
+        #print(feature.name)
         prep = re.findall(f"([(]{feature.name}....\w*[)])", path)
+        #print(prep)
         if len(prep) > 0:
+            #print("si entró :)")
             values = re.findall(f"(?<=!= |== )[a-z]+", str(prep))
             if len(values) > 1:
                 values = ", ".join(values)
                 newString = f" ({feature.name} != " + values + ") "
             else:
                 newString = " " + " ".join(prep) + " "
-            if i > 0:
+            if not_first:
                 newPath += "AND" + newString
             else:
                 newPath += newString
+                not_first = True;
 
     probabilities = re.search("{.*}", path)
     newPath += "then " + str(probabilities.group())
-    print(newPath)
     return newPath
 
 

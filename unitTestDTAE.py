@@ -455,3 +455,52 @@ class TestDTAE(unittest.TestCase):
         answer = "If (color != yellow, purple) AND (age != adult) then {'dip': '100.0%', 'stretch': '0.0%'}"
         new_path = analyzeDecisionPath(path, features)
         self.assertEqual(new_path, answer)
+
+    def test_decision_path_reduction_audiology_paths(self):
+        train_file = open('OCC Categorical Datasets/audiology/audiology.training1.arff', "r")
+        train_dataset = arff.load(train_file)
+        train_file.close()
+        feature_names = list()
+        for attribute in train_dataset['attributes']:
+            feature_names.append(attribute[0])
+
+        train_dataset = pd.DataFrame(train_dataset['data'], columns=feature_names)
+
+        X_train = train_dataset.iloc[:, 0:train_dataset.shape[1] - 1]
+        y_train = train_dataset.iloc[:, train_dataset.shape[1] - 1:train_dataset.shape[1]]
+
+        dtae = DTAE()
+        dtae._DTAE__check_valid_dataset(X_train, y_train)
+        dtae._DTAE__create_model(X_train)
+        X = dtae._DTAE__handle_missing_data(X_train)
+        X = dtae._DTAE__clean_invalid_features(X)
+
+        features = dtae._DTAE__valid_features
+
+        audiology_paths = ["If (speech != normal) AND (air != mild) then {'f': '78.38%', 't': '21.62%'} ",
+                           "If (bone != mild) AND (age_gt_60 != f) AND (speech != normal) then {'mild': '74.07%', 'moderate': '11.11%', 'normal': '14.81%', 'profound': '0.0%', 'severe': '0.0%'}",
+                           "If (tymp == a) then {'f': '99.28%', 't': '0.72%'}",
+                           "If (o_ar_c != absent) AND (o_ar_u != absent) AND (o_ar_c != elevated) then {'absent': '0.0%', 'elevated': '10.11%', 'normal': '89.89%'}",
+                           "If (air != normal) AND (o_ar_c != absent) AND (age_gt_60 != f) AND (history_dizziness != f) then {'mild': '66.67%', 'moderate': '33.33%', 'normal': '0.0%', 'unmeasured': '0.0%'}",
+                           "If (notch_at_4k != t) AND (age_gt_60 != f) AND (notch_4k != t) then {'f': '59.38%', 't': '40.62%'}",
+                           "If (ar_c != absent) AND (ar_c != elevated) then {'absent': '3.26%', 'elevated': '9.78%', 'normal': '86.96%'}",
+                           "If (ar_c != absent) AND (o_ar_c == normal) then {'absent': '1.11%', 'elevated': '13.33%', 'normal': '85.56}%'"
+                          ]
+
+        answer_paths = ["If (air != mild) AND (speech != normal) then {'f': '78.38%', 't': '21.62%'}",
+                        "If (age_gt_60 != f) AND (bone != mild) AND (speech != normal) then {'mild': '74.07%', 'moderate': '11.11%', 'normal': '14.81%', 'profound': '0.0%', 'severe': '0.0%'}",
+                        "If (tymp == a) then {'f': '99.28%', 't': '0.72%'}",
+                        "If (o_ar_c != absent, elevated) AND (o_ar_u != absent) then {'absent': '0.0%', 'elevated': '10.11%', 'normal': '89.89%'}",
+                        "If (age_gt_60 != f) AND (air != normal) AND (history_dizziness != f) AND (o_ar_c != absent) then {'mild': '66.67%', 'moderate': '33.33%', 'normal': '0.0%', 'unmeasured': '0.0%'}",
+                        "If (age_gt_60 != f) AND (notch_4k != t) AND (notch_at_4k != t) then {'f': '59.38%', 't': '40.62%'}",
+                        "If (ar_c != absent, elevated) then {'absent': '3.26%', 'elevated': '9.78%', 'normal': '86.96%'}",
+                        "If (ar_c != absent) AND (o_ar_c == normal) then {'absent': '1.11%', 'elevated': '13.33%', 'normal': '85.56}"
+                        ]
+
+        for i in range(len(audiology_paths)):
+            audiology_path = audiology_paths[i]
+            answer = answer_paths[i]
+            new_path = analyzeDecisionPath(audiology_path, features)
+            self.assertEqual(new_path, answer)
+
+
