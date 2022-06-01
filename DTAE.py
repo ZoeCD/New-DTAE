@@ -394,8 +394,7 @@ class DTAE():
 
                 classifier_result = classifier.predict(np.reshape(current_instance,(1,-1)))[0]
 
-                real_value = instance.iloc[:,feature.valid_feature_index][0]
-
+                real_value = instance_imputed.iloc[:,feature.valid_feature_index][0]
 
                 print(f"Real value: {real_value}")
                 print(f"Prediction: {classifier_result}")
@@ -457,10 +456,6 @@ class DTAE():
                 continue
 
             # check if value of the split feature for sample 0 is below threshold
-            print("PROBANDO NAMES")
-            print(feature[node_id])
-            print(feature_name[node_id])
-            print(feature_name[node_id].split('_'))
             if X_test[sample_id, feature[node_id]] == 1.0:
                 threshold_value = feature_name[node_id].split('_')
                 threshold_decision = "=="
