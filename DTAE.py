@@ -403,8 +403,12 @@ class DTAE():
 
                 decisionPath = self.__print_rules(classifier, current_instance.reshape(1, -1), classifier_result, real_value,
                                    feature.encoded_value_names)
-                print(decisionPath)
-                #analyzeDecisionPath(decisionPath, self.__valid_features)
+
+                color = Fore.GREEN if (real_value == classifier_result) else Fore.RED
+                decisionPath = analyzeDecisionPath(decisionPath, self.__valid_features)
+                print(color + decisionPath)
+                print(Style.RESET_ALL)
+
         total_score = score_normal + score_outlier
         if total_score > 0:
             print(f"Classification score: {score_normal-score_outlier}")
@@ -431,10 +435,7 @@ class DTAE():
             node_indicator.indptr[sample_id] : node_indicator.indptr[sample_id + 1]
         ]
 
-        if real == prediction:
-            color = Fore.GREEN
-        else:
-            color = Fore.RED
+
 
         values_leaf = tree_.value[leaf_id[sample_id]]
         dir = {}
@@ -477,7 +478,6 @@ class DTAE():
 
                 decision_path += f"({threshold_name} {threshold_decision} {threshold_value}) AND "
 
-        print(Style.RESET_ALL)
         return decision_path
 
     def plot_feature_tree(self, feature: Feature, classifier: tree.DecisionTreeClassifier):
@@ -502,7 +502,6 @@ def analyzeDecisionPath(path, features):
         prep = re.findall(f"([(]{feature.name}....\w*[)])", path)
         #print(prep)
         if len(prep) > 0:
-            #print("si entró :)")
             values = re.findall(f"(?<=!= |== )[a-z]+", str(prep))
             if len(values) > 1:
                 values = ", ".join(values)

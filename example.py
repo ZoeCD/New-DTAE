@@ -40,20 +40,9 @@ def main():
     print(Style.RESET_ALL)
     print("-----------------------------------")
 
-    dtae.classify_and_interpret(X_test.values[1])
-    print("-----------------------------------")
     dtae.classify_and_interpret(X_test.values[2])
     print("-----------------------------------")
-    dtae.classify_and_interpret(X_test.values[5])
-    print("-----------------------------------")
-    dtae.classify_and_interpret(X_test.values[10])
-    print("-----------------------------------")
-    dtae.classify_and_interpret(X_test.values[15])
-    print("-----------------------------------")
-    dtae.classify_and_interpret(X_test.values[17])
-    print("-----------------------------------")
-    dtae.classify_and_interpret(X_test.values[30])
-    print("-----------------------------------")
+
 
 
 
