@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score
 from colorama import Fore, Back, Style
 
 def main():
-    train_file = open('OCC Categorical Datasets/balloons/balloons.training3.arff', "r")
+    train_file = open('OCC Categorical Datasets/audiology/audiology.training1.arff', "r")
     train_dataset = arff.load(train_file)
     train_file.close()
     feature_names = list()
@@ -14,7 +14,7 @@ def main():
 
     train_dataset = pd.DataFrame(train_dataset['data'], columns=feature_names)
 
-    test_file = open('OCC Categorical Datasets/balloons/balloons.testing3.arff', "r")
+    test_file = open('OCC Categorical Datasets/audiology/audiology.testing1.arff', "r")
     test_dataset = pd.DataFrame(arff.load(test_file)['data'], columns=feature_names)
     test_file.close()
 
@@ -40,8 +40,9 @@ def main():
     print(Style.RESET_ALL)
     print("-----------------------------------")
 
-    dtae.classify_and_interpret(X_test.values[1])
+    dtae.classify_and_interpret(X_test.values[2])
     print("-----------------------------------")
+
 
 
 
